@@ -89,7 +89,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     self = [super init];
     if (self) {
-        _avoidEmptySpaceAroundImage = NO;
+        _avoidEmptySpaceAroundImage = YES;
         _applyMaskToCroppedImage = NO;
         _maskLayerLineWidth = 1.0;
         _rotationEnabled = NO;
