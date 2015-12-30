@@ -56,7 +56,6 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 @property (assign, nonatomic) BOOL originalNavigationControllerNavigationBarHidden;
 @property (strong, nonatomic) UIImage *originalNavigationControllerNavigationBarShadowImage;
 @property (copy, nonatomic) UIColor *originalNavigationControllerViewBackgroundColor;
-@property (assign, nonatomic) BOOL originalStatusBarHidden;
 
 @property (strong, nonatomic) RSKImageScrollView *imageScrollView;
 @property (strong, nonatomic) RSKTouchView *overlayView;
@@ -125,21 +124,21 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (void)viewDidLoad
 {
     [super viewDidLoad];
-    
+
     if ([self respondsToSelector:@selector(edgesForExtendedLayout)]) {
         self.edgesForExtendedLayout = UIRectEdgeNone;
         self.automaticallyAdjustsScrollViewInsets = NO;
     }
-    
+
     self.view.backgroundColor = [UIColor blackColor];
     self.view.clipsToBounds = YES;
-    
+
     [self.view addSubview:self.imageScrollView];
     [self.view addSubview:self.overlayView];
     [self.view addSubview:self.moveAndScaleLabel];
     [self.view addSubview:self.cancelButton];
     [self.view addSubview:self.chooseButton];
-    
+
     [self.view addGestureRecognizer:self.doubleTapGestureRecognizer];
     [self.view addGestureRecognizer:self.rotationGestureRecognizer];
 }
@@ -147,16 +146,10 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (void)viewWillAppear:(BOOL)animated
 {
     [super viewWillAppear:animated];
-    
-    UIApplication *application = [UIApplication rsk_sharedApplication];
-    if (application) {
-        self.originalStatusBarHidden = application.statusBarHidden;
-        [application setStatusBarHidden:YES];
-    }
-    
+
     self.originalNavigationControllerNavigationBarHidden = self.navigationController.navigationBarHidden;
     [self.navigationController setNavigationBarHidden:YES animated:NO];
-    
+
     self.originalNavigationControllerNavigationBarShadowImage = self.navigationController.navigationBar.shadowImage;
     self.navigationController.navigationBar.shadowImage = nil;
 }
@@ -164,7 +157,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (void)viewDidAppear:(BOOL)animated
 {
     [super viewDidAppear:animated];
-    
+
     self.originalNavigationControllerViewBackgroundColor = self.navigationController.view.backgroundColor;
     self.navigationController.view.backgroundColor = [UIColor blackColor];
 }
@@ -172,12 +165,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (void)viewWillDisappear:(BOOL)animated
 {
     [super viewWillDisappear:animated];
-    
-    UIApplication *application = [UIApplication rsk_sharedApplication];
-    if (application) {
-        [application setStatusBarHidden:self.originalStatusBarHidden];
-    }
-    
+
     [self.navigationController setNavigationBarHidden:self.originalNavigationControllerNavigationBarHidden animated:animated];
     self.navigationController.navigationBar.shadowImage = self.originalNavigationControllerNavigationBarShadowImage;
     self.navigationController.view.backgroundColor = self.originalNavigationControllerViewBackgroundColor;
@@ -186,7 +174,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (void)viewWillLayoutSubviews
 {
     [super viewWillLayoutSubviews];
-    
+
     [self updateMaskRect];
     [self layoutImageScrollView];
     [self layoutOverlayView];
@@ -197,7 +185,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (void)viewDidLayoutSubviews
 {
     [super viewDidLayoutSubviews];
-    
+
     if (!self.imageScrollView.zoomView) {
         [self displayImage];
     }
@@ -206,55 +194,55 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (void)updateViewConstraints
 {
     [super updateViewConstraints];
-    
+
     if (!self.didSetupConstraints) {
         // ---------------------------
         // The label "Move and Scale".
         // ---------------------------
-        
+
         NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem:self.moveAndScaleLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual
                                                                          toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f
                                                                        constant:0.0f];
         [self.view addConstraint:constraint];
-        
+
         CGFloat constant = kPortraitMoveAndScaleLabelVerticalMargin;
         self.moveAndScaleLabelTopConstraint = [NSLayoutConstraint constraintWithItem:self.moveAndScaleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual
                                                                               toItem:self.view attribute:NSLayoutAttributeTop multiplier:1.0f
                                                                             constant:constant];
         [self.view addConstraint:self.moveAndScaleLabelTopConstraint];
-        
+
         // --------------------
         // The button "Cancel".
         // --------------------
-        
+
         constant = kPortraitCancelAndChooseButtonsHorizontalMargin;
         constraint = [NSLayoutConstraint constraintWithItem:self.cancelButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual
                                                      toItem:self.view attribute:NSLayoutAttributeLeft multiplier:1.0f
                                                    constant:constant];
         [self.view addConstraint:constraint];
-        
+
         constant = -kPortraitCancelAndChooseButtonsVerticalMargin;
         self.cancelButtonBottomConstraint = [NSLayoutConstraint constraintWithItem:self.cancelButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual
                                                                             toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0f
                                                                           constant:constant];
         [self.view addConstraint:self.cancelButtonBottomConstraint];
-        
+
         // --------------------
         // The button "Choose".
         // --------------------
-        
+
         constant = -kPortraitCancelAndChooseButtonsHorizontalMargin;
         constraint = [NSLayoutConstraint constraintWithItem:self.chooseButton attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual
                                                      toItem:self.view attribute:NSLayoutAttributeRight multiplier:1.0f
                                                    constant:constant];
         [self.view addConstraint:constraint];
-        
+
         constant = -kPortraitCancelAndChooseButtonsVerticalMargin;
         self.chooseButtonBottomConstraint = [NSLayoutConstraint constraintWithItem:self.chooseButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual
                                                                             toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0f
                                                                           constant:constant];
         [self.view addConstraint:self.chooseButtonBottomConstraint];
-        
+
         self.didSetupConstraints = YES;
     } else {
         if ([self isPortraitInterfaceOrientation]) {
@@ -374,27 +362,27 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     CGRect cropRect = CGRectZero;
     float zoomScale = 1.0 / self.imageScrollView.zoomScale;
-    
+
     cropRect.origin.x = round(self.imageScrollView.contentOffset.x * zoomScale);
     cropRect.origin.y = round(self.imageScrollView.contentOffset.y * zoomScale);
     cropRect.size.width = CGRectGetWidth(self.imageScrollView.bounds) * zoomScale;
     cropRect.size.height = CGRectGetHeight(self.imageScrollView.bounds) * zoomScale;
-    
+
     CGFloat width = CGRectGetWidth(cropRect);
     CGFloat height = CGRectGetHeight(cropRect);
     CGFloat ceilWidth = ceil(width);
     CGFloat ceilHeight = ceil(height);
-    
+
     if (fabs(ceilWidth - width) < pow(10, kK) * RSK_EPSILON * fabs(ceilWidth + width) || fabs(ceilWidth - width) < RSK_MIN ||
         fabs(ceilHeight - height) < pow(10, kK) * RSK_EPSILON * fabs(ceilHeight + height) || fabs(ceilHeight - height) < RSK_MIN) {
-        
+
         cropRect.size.width = ceilWidth;
         cropRect.size.height = ceilHeight;
     } else {
         cropRect.size.width = floor(width);
         cropRect.size.height = floor(height);
     }
-    
+
     return cropRect;
 }
 
@@ -434,7 +422,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     if (_avoidEmptySpaceAroundImage != avoidEmptySpaceAroundImage) {
         _avoidEmptySpaceAroundImage = avoidEmptySpaceAroundImage;
-        
+
         self.imageScrollView.aspectFill = avoidEmptySpaceAroundImage;
     }
 }
@@ -443,7 +431,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     if (_cropMode != cropMode) {
         _cropMode = cropMode;
-        
+
         if (self.imageScrollView.zoomView) {
             [self reset:NO];
         }
@@ -464,16 +452,16 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     if (![_maskPath isEqual:maskPath]) {
         _maskPath = maskPath;
-        
+
         UIBezierPath *clipPath = [UIBezierPath bezierPathWithRect:self.rectForClipPath];
         [clipPath appendPath:maskPath];
         clipPath.usesEvenOddFillRule = YES;
-        
+
         CABasicAnimation *pathAnimation = [CABasicAnimation animationWithKeyPath:@"path"];
         pathAnimation.duration = [CATransaction animationDuration];
         pathAnimation.timingFunction = [CATransaction animationTimingFunction];
         [self.maskLayer addAnimation:pathAnimation forKey:@"path"];
-        
+
         self.maskLayer.path = [clipPath CGPath];
     }
 }
@@ -491,7 +479,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     if (_rotationEnabled != rotationEnabled) {
         _rotationEnabled = rotationEnabled;
-        
+
         self.rotationGestureRecognizer.enabled = rotationEnabled;
     }
 }
@@ -517,7 +505,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     [self setRotationAngle:(self.rotationAngle + gestureRecognizer.rotation)];
     gestureRecognizer.rotation = 0;
-    
+
     if (gestureRecognizer.state == UIGestureRecognizerStateEnded) {
         [UIView animateWithDuration:kLayoutImageScrollViewAnimationDuration
                               delay:0.0
@@ -546,12 +534,12 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         [UIView setAnimationDuration:kResetAnimationDuration];
         [UIView setAnimationBeginsFromCurrentState:YES];
     }
-    
+
     [self resetRotation];
     [self resetFrame];
     [self resetZoomScale];
     [self resetContentOffset];
-    
+
     if (animated) {
         [UIView commitAnimations];
     }
@@ -561,7 +549,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     CGSize boundsSize = self.imageScrollView.bounds.size;
     CGRect frameToCenter = self.imageScrollView.zoomView.frame;
-    
+
     CGPoint contentOffset;
     if (CGRectGetWidth(frameToCenter) > boundsSize.width) {
         contentOffset.x = (CGRectGetWidth(frameToCenter) - boundsSize.width) * 0.5f;
@@ -573,7 +561,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     } else {
         contentOffset.y = 0;
     }
-    
+
     self.imageScrollView.contentOffset = contentOffset;
 }
 
@@ -602,21 +590,21 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 {
     RSKLineSegment top = RSKLineSegmentMake(CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect)),
                                             CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect)));
-    
+
     RSKLineSegment right = RSKLineSegmentMake(CGPointMake(CGRectGetMaxX(rect), CGRectGetMinY(rect)),
                                               CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect)));
-    
+
     RSKLineSegment bottom = RSKLineSegmentMake(CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect)),
                                                CGPointMake(CGRectGetMaxX(rect), CGRectGetMaxY(rect)));
-    
+
     RSKLineSegment left = RSKLineSegmentMake(CGPointMake(CGRectGetMinX(rect), CGRectGetMinY(rect)),
                                              CGPointMake(CGRectGetMinX(rect), CGRectGetMaxY(rect)));
-    
+
     CGPoint p0 = RSKLineSegmentIntersection(top, lineSegment);
     CGPoint p1 = RSKLineSegmentIntersection(right, lineSegment);
     CGPoint p2 = RSKLineSegmentIntersection(bottom, lineSegment);
     CGPoint p3 = RSKLineSegmentIntersection(left, lineSegment);
-    
+
     NSMutableArray *intersectionPoints = [@[] mutableCopy];
     if (!RSKPointIsNull(p0)) {
         [intersectionPoints addObject:[NSValue valueWithCGPoint:p0]];
@@ -630,7 +618,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     if (!RSKPointIsNull(p3)) {
         [intersectionPoints addObject:[NSValue valueWithCGPoint:p3]];
     }
-    
+
     return [intersectionPoints copy];
 }
 
@@ -645,7 +633,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 - (void)layoutImageScrollView
 {
     CGRect frame = CGRectZero;
-    
+
     // The bounds of the image scroll view should always fill the mask area.
     switch (self.cropMode) {
         case RSKImageCropModeSquare: {
@@ -655,26 +643,26 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
                 // Step 1: Rotate the left edge of the initial rect of the image scroll view clockwise around the center by `rotationAngle`.
                 CGRect initialRect = self.maskRect;
                 CGFloat rotationAngle = self.rotationAngle;
-                
+
                 CGPoint leftTopPoint = CGPointMake(initialRect.origin.x, initialRect.origin.y);
                 CGPoint leftBottomPoint = CGPointMake(initialRect.origin.x, initialRect.origin.y + initialRect.size.height);
                 RSKLineSegment leftLineSegment = RSKLineSegmentMake(leftTopPoint, leftBottomPoint);
-                
+
                 CGPoint pivot = RSKRectCenterPoint(initialRect);
-                
+
                 CGFloat alpha = fabs(rotationAngle);
                 RSKLineSegment rotatedLeftLineSegment = RSKLineSegmentRotateAroundPoint(leftLineSegment, pivot, alpha);
-                
+
                 // Step 2: Find the points of intersection of the rotated edge with the initial rect.
                 NSArray *points = [self intersectionPointsOfLineSegment:rotatedLeftLineSegment withRect:initialRect];
-                
+
                 // Step 3: If the number of intersection points more than one
                 // then the bounds of the rotated image scroll view does not completely fill the mask area.
                 // Therefore, we need to update the frame of the image scroll view.
                 // Otherwise, we can use the initial rect.
                 if (points.count > 1) {
                     // We have a right triangle.
-                    
+
                     // Step 4: Calculate the altitude of the right triangle.
                     if ((alpha > M_PI_2) && (alpha < M_PI)) {
                         alpha = alpha - M_PI_2;
@@ -685,16 +673,16 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
                     CGFloat cosAlpha = cos(alpha);
                     CGFloat hypotenuse = RSKPointDistance([points[0] CGPointValue], [points[1] CGPointValue]);
                     CGFloat altitude = hypotenuse * sinAlpha * cosAlpha;
-                    
+
                     // Step 5: Calculate the target width.
                     CGFloat initialWidth = CGRectGetWidth(initialRect);
                     CGFloat targetWidth = initialWidth + altitude * 2;
-                    
+
                     // Step 6: Calculate the target frame.
                     CGFloat scale = targetWidth / initialWidth;
                     CGPoint center = RSKRectCenterPoint(initialRect);
                     frame = RSKRectScaleAroundPoint(initialRect, center, scale, scale);
-                    
+
                     // Step 7: Avoid floats.
                     frame.origin.x = round(CGRectGetMinX(frame));
                     frame.origin.y = round(CGRectGetMinY(frame));
@@ -720,7 +708,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
             break;
         }
     }
-    
+
     CGAffineTransform transform = self.imageScrollView.transform;
     self.imageScrollView.transform = CGAffineTransformIdentity;
     self.imageScrollView.frame = frame;
@@ -739,16 +727,16 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         case RSKImageCropModeCircle: {
             CGFloat viewWidth = CGRectGetWidth(self.view.bounds);
             CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
-            
+
             CGFloat diameter;
             if ([self isPortraitInterfaceOrientation]) {
                 diameter = MIN(viewWidth, viewHeight) - kPortraitCircleMaskRectInnerEdgeInset * 2;
             } else {
                 diameter = MIN(viewWidth, viewHeight) - kLandscapeCircleMaskRectInnerEdgeInset * 2;
             }
-            
+
             CGSize maskSize = CGSizeMake(diameter, diameter);
-            
+
             self.maskRect = CGRectMake((viewWidth - maskSize.width) * 0.5f,
                                        (viewHeight - maskSize.height) * 0.5f,
                                        maskSize.width,
@@ -758,16 +746,16 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         case RSKImageCropModeSquare: {
             CGFloat viewWidth = CGRectGetWidth(self.view.bounds);
             CGFloat viewHeight = CGRectGetHeight(self.view.bounds);
-            
+
             CGFloat length;
             if ([self isPortraitInterfaceOrientation]) {
                 length = MIN(viewWidth, viewHeight) - kPortraitSquareMaskRectInnerEdgeInset * 2;
             } else {
                 length = MIN(viewWidth, viewHeight) - kLandscapeSquareMaskRectInnerEdgeInset * 2;
             }
-            
+
             CGSize maskSize = CGSizeMake(length, length);
-            
+
             self.maskRect = CGRectMake((viewWidth - maskSize.width) * 0.5f,
                                        (viewHeight - maskSize.height) * 0.5f,
                                        maskSize.width,
@@ -807,7 +795,7 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     CGFloat y = CGRectGetMinY(cropRect);
     CGFloat width = CGRectGetWidth(cropRect);
     CGFloat height = CGRectGetHeight(cropRect);
-    
+
     UIImageOrientation imageOrientation = image.imageOrientation;
     if (imageOrientation == UIImageOrientationRight || imageOrientation == UIImageOrientationRightMirrored) {
         cropRect.origin.x = y;
@@ -823,19 +811,19 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         cropRect.origin.x = round(imageSize.width - CGRectGetWidth(cropRect) - x);
         cropRect.origin.y = round(imageSize.height - CGRectGetHeight(cropRect) - y);
     }
-    
+
     CGFloat imageScale = image.scale;
     cropRect = CGRectApplyAffineTransform(cropRect, CGAffineTransformMakeScale(imageScale, imageScale));
-    
+
     // Step 2: create an image using the data contained within the specified rect.
     CGImageRef croppedCGImage = CGImageCreateWithImageInRect(image.CGImage, cropRect);
     UIImage *croppedImage = [UIImage imageWithCGImage:croppedCGImage scale:imageScale orientation:imageOrientation];
     CGImageRelease(croppedCGImage);
-    
+
     // Step 3: fix orientation of the cropped image.
     croppedImage = [croppedImage fixOrientation];
     imageOrientation = croppedImage.imageOrientation;
-    
+
     // Step 4: If current mode is `RSKImageCropModeSquare` and the image is not rotated
     // or mask should not be applied to the image after cropping and the image is not rotated,
     // we can return the cropped image immediately.
@@ -849,41 +837,41 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
         CGSize contextSize = CGSizeMake(ceil(maskSize.width / zoomScale),
                                         ceil(maskSize.height / zoomScale));
         UIGraphicsBeginImageContextWithOptions(contextSize, NO, imageScale);
-        
+
         // Step 6: apply the mask if needed.
         if (applyMaskToCroppedImage) {
             // 6a: scale the mask to the size of the crop rect.
             UIBezierPath *maskPathCopy = [maskPath copy];
             CGFloat scale = 1 / zoomScale;
             [maskPathCopy applyTransform:CGAffineTransformMakeScale(scale, scale)];
-            
+
             // 6b: move the mask to the top-left.
             CGPoint translation = CGPointMake(-CGRectGetMinX(maskPathCopy.bounds),
                                               -CGRectGetMinY(maskPathCopy.bounds));
             [maskPathCopy applyTransform:CGAffineTransformMakeTranslation(translation.x, translation.y)];
-            
+
             // 6c: apply the mask.
             [maskPathCopy addClip];
         }
-        
+
         // Step 7: rotate the cropped image if needed.
         if (rotationAngle != 0) {
             croppedImage = [croppedImage rotateByAngle:rotationAngle];
         }
-        
+
         // Step 8: draw the cropped image.
         CGPoint point = CGPointMake(round((contextSize.width - croppedImage.size.width) * 0.5f),
                                     round((contextSize.height - croppedImage.size.height) * 0.5f));
         [croppedImage drawAtPoint:point];
-        
+
         // Step 9: get the cropped image affter processing from the context.
         croppedImage = UIGraphicsGetImageFromCurrentImageContext();
-        
+
         // Step 10: remove the context.
         UIGraphicsEndImageContext();
-        
+
         croppedImage = [UIImage imageWithCGImage:croppedImage.CGImage scale:imageScale orientation:imageOrientation];
-        
+
         // Step 11: return the cropped image affter processing.
         return croppedImage;
     }
@@ -897,9 +885,9 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     dispatch_async(dispatch_get_global_queue(DISPATCH_QUEUE_PRIORITY_DEFAULT, 0), ^{
         CGRect cropRect = self.cropRect;
         CGFloat rotationAngle = self.rotationAngle;
-        
+
         UIImage *croppedImage = [self croppedImage:self.originalImage cropMode:self.cropMode cropRect:cropRect rotationAngle:rotationAngle zoomScale:self.imageScrollView.zoomScale maskPath:self.maskPath applyMaskToCroppedImage:self.applyMaskToCroppedImage];
-        
+
         dispatch_async(dispatch_get_main_queue(), ^{
             if ([self.delegate respondsToSelector:@selector(imageCropViewController:didCropImage:usingCropRect:rotationAngle:)]) {
                 [self.delegate imageCropViewController:self didCropImage:croppedImage usingCropRect:cropRect rotationAngle:rotationAngle];
