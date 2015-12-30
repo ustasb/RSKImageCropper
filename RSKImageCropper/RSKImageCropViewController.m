@@ -135,9 +135,6 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 
     [self.view addSubview:self.imageScrollView];
     [self.view addSubview:self.overlayView];
-    [self.view addSubview:self.moveAndScaleLabel];
-    [self.view addSubview:self.cancelButton];
-    [self.view addSubview:self.chooseButton];
 
     [self.view addGestureRecognizer:self.doubleTapGestureRecognizer];
     [self.view addGestureRecognizer:self.rotationGestureRecognizer];
@@ -179,7 +176,6 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     [self layoutImageScrollView];
     [self layoutOverlayView];
     [self updateMaskPath];
-    [self.view setNeedsUpdateConstraints];
 }
 
 - (void)viewDidLayoutSubviews
@@ -188,72 +184,6 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
 
     if (!self.imageScrollView.zoomView) {
         [self displayImage];
-    }
-}
-
-- (void)updateViewConstraints
-{
-    [super updateViewConstraints];
-
-    if (!self.didSetupConstraints) {
-        // ---------------------------
-        // The label "Move and Scale".
-        // ---------------------------
-
-        NSLayoutConstraint *constraint = [NSLayoutConstraint constraintWithItem:self.moveAndScaleLabel attribute:NSLayoutAttributeCenterX relatedBy:NSLayoutRelationEqual
-                                                                         toItem:self.view attribute:NSLayoutAttributeCenterX multiplier:1.0f
-                                                                       constant:0.0f];
-        [self.view addConstraint:constraint];
-
-        CGFloat constant = kPortraitMoveAndScaleLabelVerticalMargin;
-        self.moveAndScaleLabelTopConstraint = [NSLayoutConstraint constraintWithItem:self.moveAndScaleLabel attribute:NSLayoutAttributeTop relatedBy:NSLayoutRelationEqual
-                                                                              toItem:self.view attribute:NSLayoutAttributeTop multiplier:1.0f
-                                                                            constant:constant];
-        [self.view addConstraint:self.moveAndScaleLabelTopConstraint];
-
-        // --------------------
-        // The button "Cancel".
-        // --------------------
-
-        constant = kPortraitCancelAndChooseButtonsHorizontalMargin;
-        constraint = [NSLayoutConstraint constraintWithItem:self.cancelButton attribute:NSLayoutAttributeLeft relatedBy:NSLayoutRelationEqual
-                                                     toItem:self.view attribute:NSLayoutAttributeLeft multiplier:1.0f
-                                                   constant:constant];
-        [self.view addConstraint:constraint];
-
-        constant = -kPortraitCancelAndChooseButtonsVerticalMargin;
-        self.cancelButtonBottomConstraint = [NSLayoutConstraint constraintWithItem:self.cancelButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual
-                                                                            toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0f
-                                                                          constant:constant];
-        [self.view addConstraint:self.cancelButtonBottomConstraint];
-
-        // --------------------
-        // The button "Choose".
-        // --------------------
-
-        constant = -kPortraitCancelAndChooseButtonsHorizontalMargin;
-        constraint = [NSLayoutConstraint constraintWithItem:self.chooseButton attribute:NSLayoutAttributeRight relatedBy:NSLayoutRelationEqual
-                                                     toItem:self.view attribute:NSLayoutAttributeRight multiplier:1.0f
-                                                   constant:constant];
-        [self.view addConstraint:constraint];
-
-        constant = -kPortraitCancelAndChooseButtonsVerticalMargin;
-        self.chooseButtonBottomConstraint = [NSLayoutConstraint constraintWithItem:self.chooseButton attribute:NSLayoutAttributeBottom relatedBy:NSLayoutRelationEqual
-                                                                            toItem:self.view attribute:NSLayoutAttributeBottom multiplier:1.0f
-                                                                          constant:constant];
-        [self.view addConstraint:self.chooseButtonBottomConstraint];
-
-        self.didSetupConstraints = YES;
-    } else {
-        if ([self isPortraitInterfaceOrientation]) {
-            self.moveAndScaleLabelTopConstraint.constant = kPortraitMoveAndScaleLabelVerticalMargin;
-            self.cancelButtonBottomConstraint.constant = -kPortraitCancelAndChooseButtonsVerticalMargin;
-            self.chooseButtonBottomConstraint.constant = -kPortraitCancelAndChooseButtonsVerticalMargin;
-        } else {
-            self.moveAndScaleLabelTopConstraint.constant = kLandscapeMoveAndScaleLabelVerticalMargin;
-            self.cancelButtonBottomConstraint.constant = -kLandscapeCancelAndChooseButtonsVerticalMargin;
-            self.chooseButtonBottomConstraint.constant = -kLandscapeCancelAndChooseButtonsVerticalMargin;
-        }
     }
 }
 
