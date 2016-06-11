@@ -754,57 +754,54 @@ static const CGFloat kLayoutImageScrollViewAnimationDuration = 0.25;
     croppedImage = [croppedImage fixOrientation];
     imageOrientation = croppedImage.imageOrientation;
 
-    // Step 4: If current mode is `RSKImageCropModeSquare` and the image is not rotated
-    // or mask should not be applied to the image after cropping and the image is not rotated,
-    // we can return the cropped image immediately.
-    // Otherwise, we must further process the image.
-    if ((cropMode == RSKImageCropModeSquare || !applyMaskToCroppedImage) && rotationAngle == 0.0) {
-        // Step 5: return the cropped image immediately.
-        return croppedImage;
-    } else {
-        // Step 5: create a new context.
-        CGSize maskSize = CGRectIntegral(maskPath.bounds).size;
-        CGSize contextSize = CGSizeMake(ceil(maskSize.width / zoomScale),
-                                        ceil(maskSize.height / zoomScale));
-        UIGraphicsBeginImageContextWithOptions(contextSize, NO, imageScale);
+    // Step 4. Create the graphics context.
+    CGSize maskSize = CGRectIntegral(maskPath.bounds).size;
+    CGSize contextSize = CGSizeMake(ceil(maskSize.width / zoomScale) - 1,
+                                    ceil(maskSize.height / zoomScale) - 1);
 
-        // Step 6: apply the mask if needed.
-        if (applyMaskToCroppedImage) {
-            // 6a: scale the mask to the size of the crop rect.
-            UIBezierPath *maskPathCopy = [maskPath copy];
-            CGFloat scale = 1 / zoomScale;
-            [maskPathCopy applyTransform:CGAffineTransformMakeScale(scale, scale)];
+    UIGraphicsBeginImageContextWithOptions(contextSize, NO, imageScale);
 
-            // 6b: move the mask to the top-left.
-            CGPoint translation = CGPointMake(-CGRectGetMinX(maskPathCopy.bounds),
-                                              -CGRectGetMinY(maskPathCopy.bounds));
-            [maskPathCopy applyTransform:CGAffineTransformMakeTranslation(translation.x, translation.y)];
+    // Add black background.
+    CGContextRef context = UIGraphicsGetCurrentContext();
+    CGContextSetRGBFillColor(context, 0.0f, 0.0f, 0.0f, 1.0f);
+    CGContextFillRect(context, CGRectMake(0, 0, contextSize.width, contextSize.height));
 
-            // 6c: apply the mask.
-            [maskPathCopy addClip];
-        }
+    // Step 5: apply the mask if needed.
+    if (applyMaskToCroppedImage) {
+        // 5a: scale the mask to the size of the crop rect.
+        UIBezierPath *maskPathCopy = [maskPath copy];
+        CGFloat scale = 1 / zoomScale;
+        [maskPathCopy applyTransform:CGAffineTransformMakeScale(scale, scale)];
 
-        // Step 7: rotate the cropped image if needed.
-        if (rotationAngle != 0) {
-            croppedImage = [croppedImage rotateByAngle:rotationAngle];
-        }
+        // 5b: move the mask to the top-left.
+        CGPoint translation = CGPointMake(-CGRectGetMinX(maskPathCopy.bounds),
+                                          -CGRectGetMinY(maskPathCopy.bounds));
+        [maskPathCopy applyTransform:CGAffineTransformMakeTranslation(translation.x, translation.y)];
 
-        // Step 8: draw the cropped image.
-        CGPoint point = CGPointMake(round((contextSize.width - croppedImage.size.width) * 0.5f),
-                                    round((contextSize.height - croppedImage.size.height) * 0.5f));
-        [croppedImage drawAtPoint:point];
-
-        // Step 9: get the cropped image affter processing from the context.
-        croppedImage = UIGraphicsGetImageFromCurrentImageContext();
-
-        // Step 10: remove the context.
-        UIGraphicsEndImageContext();
-
-        croppedImage = [UIImage imageWithCGImage:croppedImage.CGImage scale:imageScale orientation:imageOrientation];
-
-        // Step 11: return the cropped image affter processing.
-        return croppedImage;
+        // 5c: apply the mask.
+        [maskPathCopy addClip];
     }
+
+    // Step 6: rotate the cropped image if needed.
+    if (rotationAngle != 0) {
+        croppedImage = [croppedImage rotateByAngle:rotationAngle];
+    }
+
+    // Step 7: draw the cropped image.
+    CGPoint point = CGPointMake(round((contextSize.width - croppedImage.size.width) * 0.5f),
+                                round((contextSize.height - croppedImage.size.height) * 0.5f));
+    [croppedImage drawAtPoint:point];
+
+    // Step 8: get the cropped image affter processing from the context.
+    croppedImage = UIGraphicsGetImageFromCurrentImageContext();
+
+    // Step 9: remove the context.
+    UIGraphicsEndImageContext();
+
+    croppedImage = [UIImage imageWithCGImage:croppedImage.CGImage scale:imageScale orientation:imageOrientation];
+
+    // Step 11: return the cropped image affter processing.
+    return croppedImage;
 }
 
 - (void)cropImage
